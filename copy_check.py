@@ -25,8 +25,8 @@ backupList=[]	#Append list to execute backup
 copiedAtThisRound=[]	#Pickle dump list for the round of back up
 initialList=[]
 
-backUpTo=os.path.abspath('/Users/mav88/data/practice') #Back up to
-backUpFrom = os.path.abspath('/Users/mav88/data/practice_from') #Find subj to back up from
+backUpTo=os.path.abspath('/volume1/CCNC_MRI') #Back up to
+backUpFrom = os.path.abspath('/volumeUSB2/usbshare') #Find subj to back up from
 
 if os.path.isfile(os.path.join(backUpFrom,"DO_NOT_DELETE_LOG.txt")):
     f = open(os.path.join(backUpFrom,"DO_NOT_DELETE_LOG.txt"),'r')
