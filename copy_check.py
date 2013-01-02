@@ -14,7 +14,6 @@ import re
 import time
 import sys
 import os
-from os import join
 import tree
 import shutil
 import getpass
@@ -63,7 +62,6 @@ def backUpConfirm(backUpFrom):
         except:
             continue
     #removing folder names begining with '.' and '$'
-    # check out filter
     withDot=[i for i in dirList if i.startswith('.')]
     withDol=[i for i in dirList if i.startswith('$')]
     dirList = [item for item in dirList if item not in withDot]
@@ -92,9 +90,9 @@ def backUpAppend(subjFolder):
     print '\n'
     #countFile contains the tuples of image name and count number
     #countFile=[(image name,count number)]
-    groupName, countFile = countCheck(subjFolder)
-    subjInitial, fullname, subjNum = getName(subjFolder)
-    targetDir = os.path.join(backUpTo, groupName)
+    groupName,countFile=countCheck(subjFolder)
+    subjInitial,fullname,subjNum=getName(subjFolder)
+    targetDir=os.path.join(backUpTo,groupName)
     maxNum = maxGroupNum(targetDir)
     #temp file for adding count   
     f = open(os.path.join(targetDir,'.{}'.format(maxNum)),'w')
