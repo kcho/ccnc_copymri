@@ -120,7 +120,7 @@ def backUpAppend(subjFolder):
     print '\t{0} will be saved as {1} in \n\t{2}'.format(os.path.basename(subjFolder),targetName,targetFolder)
 
     if re.search('[yY]|[yY][eE][sS]',raw_input('\tCheck? [Yes/No] :')):
-        birthday=raw_input('\tDate of birth? [yyyy-mm-dd] : '))
+        birthday=raw_input('\tDate of birth? [yyyy-mm-dd] : ')
         note=raw_input('\tAny note ? :')
         toBackUp=(subjFolder,targetFolder,fullname,subjNum,groupName,note,targetDir,birthday)
 
