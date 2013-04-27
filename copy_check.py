@@ -19,6 +19,7 @@ import shutil
 import getpass
 import pickle
 from progressbar import ProgressBar,Percentage,Bar
+import glob
 
 backupList=[]	#Append list to execute backup
 copiedAtThisRound=[]	#Pickle dump list for the round of back up
@@ -78,11 +79,14 @@ def backUpConfirm(backUpFrom):
         created on ( {1} )
         ------------------------------------
         '''.format(folderName,asciiTime)
-        response = raw_input('\nIs this the name of the subject you want to back up? [Yes/No/Quit] :')
+        response = raw_input('\nIs this the name of the subject you want to back up? [Yes/No/Quit/noCall] :')
         if re.search('[yY]|[yY][Ee][Ss]',response):
             backUpAppend(subjFolder)
         elif re.search('[Dd][Oo][Nn][Ee]|stop|[Qq][Uu][Ii][Tt]|exit',response):
             break
+        elif re.search('[Nn][Oo][Cc][Aa][Ll][Ll]',response):
+            alreadyCopied.append(folderName)
+            post_check(backUpFrom)
         else:
             continue
 
@@ -157,10 +161,10 @@ def countCheck(subjFolder):
 
 
 def group():
-    possibleGroups = str('CHR,DNO,EMO,FEP,GHR,NOR,OCM,ONS,OXY,PAIN,SPR,UMO').split(',')
+    possibleGroups = str('BADUK,CHR,DNO,EMO,FEP,GHR,NOR,OCM,ONS,OXY,PAIN,SPR,UMO').split(',')
     groupName=''
     while groupName=='':
-        groupName=raw_input('\twhich group ? [CHR/DNO/EMO/FEP/GHR/NOR/OCM/ONS/OXY/PAIN/SPR/UMO] :') 
+        groupName=raw_input('\twhich group ? [BADUK/CHR/DNO/EMO/FEP/GHR/NOR/OCM/ONS/OXY/PAIN/SPR/UMO] :') 
         groupName = groupName.upper()
         if groupName not in possibleGroups:
             print 'not in groups, let Kevin know.'
@@ -205,7 +209,14 @@ def getName(subjFolder):
         return subjInitial.upper(),fullname,subjNum
        
 def maxGroupNum(targetDir):
-    maxNumPattern=re.compile('\d+')
+    if 'BADUK' in targetDir:
+        conpro=raw_input('PRO/CNT ? :')
+        conpro='_'+conpro.upper()
+        maxNumPattern=re.compile('{0}(\d+)'.format(conpro))
+    else:    
+        conpro=''
+        maxNumPattern=re.compile('\d+')
+
     mx = 0
     for string in maxNumPattern.findall(' '.join(os.listdir(targetDir))):
         if int(string) > mx:
@@ -216,7 +227,7 @@ def maxGroupNum(targetDir):
         highest ='0'+str(highest)
     else:
         highest = str(highest)
-    return highest
+    return conpro+highest
 
 def executeBackUp(backupList,backUpFrom):
     pbar = ProgressBar(widgets=[Percentage(), Bar()], maxval=len(backupList)).start()
