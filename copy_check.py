@@ -1,13 +1,5 @@
 #!/opt/bin/python2.7
 '''
-2012_12_12
-Kevin Cho
-from USB hard-drive
-find all new subjects
-copy those folders into appropriate folders
-append the log file
-save patient number and name information automatically
-into a log.txt
 '''
 
 import re
@@ -20,6 +12,7 @@ import getpass
 import pickle
 from progressbar import ProgressBar,Percentage,Bar
 import glob
+import argparse
 
 backupList=[]	#Append list to execute backup
 copiedAtThisRound=[]	#Pickle dump list for the round of back up
@@ -95,29 +88,34 @@ def backUpAppend(subjFolder):
     #countFile contains the tuples of image name and count number
     #countFile=[(image name,count number)]
     groupName,countFile=countCheck(subjFolder)
+    #groupName=(group,baseline)
     subjInitial,fullname,subjNum=getName(subjFolder)
 
     #if it is a follow up study
     if groupName[1]=='baseline':
         targetDir=os.path.join(backUpTo,groupName[0])
+        #For BADUK
+        if groupName[0]=='BADUK':
+            cntpro=raw_input('\tCNT / PRO ? :')
+            targetDir=os.path.join(backUpTo,groupName[0]+'/'+cntpro.upper())
         maxNum = maxGroupNum(targetDir)
     else:
         targetDir=os.path.join(backUpTo,groupName[0])
         targetDir=os.path.join(targetDir,'Follow_up')
         maxNum = maxGroupNum(targetDir)
 
-    #temp file for adding count
-    f = open(os.path.join(targetDir,'.{}'.format(maxNum)),'w')
-    f.write('temp')
-    f.close()
 
     if groupName[1]=='baseline':
         targetName=groupName[0]+maxNum+'_'+subjInitial
+        if groupName[0]=='BADUK':
+            targetName='BADUK_'+cntpro.upper()+maxNum+'_'+subjInitial
         targetFolder=os.path.join(targetDir,targetName)
     else:
         targetName='fu_'+groupName[0]+maxNum+'_'+subjInitial
         targetFolder=os.path.join(targetDir,targetName)
     print '\t{0} will be saved as {1} in \n\t{2}'.format(os.path.basename(subjFolder),targetName,targetFolder)
+
+    os.system('touch .tmp{0}'.format(maxNum))
 
     if re.search('[yY]|[yY][eE][sS]',raw_input('\tCheck? [Yes/No] :')):
         birthday=raw_input('\tDate of birth? [yyyy-mm-dd] : ')
@@ -226,13 +224,8 @@ def getName(subjFolder):
         return subjInitial.upper(),fullname,subjNum
 
 def maxGroupNum(targetDir):
-    if 'BADUK' in targetDir:
-        conpro=raw_input('PRO/CNT ? :')
-        conpro='_'+conpro.upper()
-        maxNumPattern=re.compile('{0}(\d+)'.format(conpro))
-    else:
-        conpro=''
-        maxNumPattern=re.compile('\d+')
+    conpro=''
+    maxNumPattern=re.compile('\d+')
 
     mx = 0
     for string in maxNumPattern.findall(' '.join(os.listdir(targetDir))):
@@ -260,7 +253,7 @@ def executeBackUp(backupList,backUpFrom):
         pbar.update(num+perOne)
         time.sleep(0.01)
         pbar.update(num+perOne)
-        os.system('rm {0}/.*'.format(i[6]))
+        os.system('rm {0}/.tmp*'.format(i[6]))
     pbar.finish()
 
 def log(source,destination,fullname,subjNum,groupName,note,birthday):
@@ -280,7 +273,12 @@ Destination : {1}
 Data produced in : {2}\t{3}
 Data copied at : {4}
 Copied by : {5}
-Note : {10}'''.format(source,destination,prodT,prodH,currentTime,user,fullname,subjNum,groupName[0],groupName[1],note,birthday))
+Note[sex/experimenter/etc]: {10}'''.format(source,destination,prodT,prodH,currentTime,user,fullname,subjNum,groupName[0],groupName[1],note,birthday))
+
+        with open(os.path.join(backUpFrom,'log.txt'),'a') as f:
+            f.write('{6}\t{8}\t{9}\t{11}\t{2}\t{3}\t{0}\t{4}\t{5}\{10}'.
+                    format(source,destination,prodT,prodH,currentTime,user,fullname,subjNum,groupName[0],groupName[1],note,birthday))
+
     except:
         print 'log failed'
 
@@ -292,4 +290,25 @@ def post_check(backUpFrom):
 
 
 if __name__=='__main__':
-    main()
+    argparser=argparse.ArgumentParser(prog='copy_check.py',
+            formatter_class=argparse.RawDescriptionHelpFormatter,
+            description='''
+            2012_12_12
+            Kevin Cho
+            from USB hard-drive
+            find all new subjects
+            copy those folders into appropriate folders
+            append the log file
+            save patient number and name information automatically
+            into a log.txt
+            ''',epilog="Kevin Cho 2013_05_17")
+    argparser.add_argument("--copy","-c",help="copies the data",action="store_true")
+    argparser.add_argument("--log","-l",help="makes the log of the copied the data",action="store_true")
+
+    args=argparser.parse_args()
+
+    if args.copy:
+        main()
+    else:
+        main()
+    #main()
